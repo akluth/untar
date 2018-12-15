@@ -1,8 +1,10 @@
 extern crate tar;
 extern crate clap;
 extern crate dialoguer;
+extern crate colored;
 
 use clap::{Arg, App};
+use colored::*;
 use dialoguer::Confirmation;
 use std::io::prelude::*;
 use std::io::{self, Read};
@@ -31,28 +33,21 @@ fn main() -> io::Result<()> {
     for file in a.entries().unwrap() {
         let mut file = file.unwrap();
 
-        println!("{:?} ", file.header().path().unwrap());
+        println!("{} {:?}", "Extracting".green().bold(), file.header().path().unwrap());
 
         let path = file.path()?;
 
         if path.to_str().unwrap().chars().last().unwrap() == '/' {
             if Path::new(path.to_str().unwrap()).exists() {
-                if Confirmation::new()
-                    .with_text("File exists. Overwrite?")
-                    .interact()
-                    .unwrap()
-                {
-                    fs::create_dir(path.to_str().unwrap());
-                }
+                continue;
             } else {
                 fs::create_dir(path.to_str().unwrap())?;
+                continue;
             }
-
-            continue;
         }
 
-        let mut file_to_write = File::create(file.header().path().unwrap())?;
-        let mut data = Vec::new();
+        let mut file_to_write;
+        let mut data;
 
         if Path::new(path.to_str().unwrap()).exists() {
             if Confirmation::new()
@@ -60,12 +55,16 @@ fn main() -> io::Result<()> {
                 .interact()
                 .unwrap()
             {
+                file_to_write = File::create(file.header().path().unwrap())?;
+                data = Vec::new();
+
                 file.read_to_end(&mut data).unwrap();
                 file_to_write.write_all(&data)?;
-            } else {
-                continue;
             }
         } else {
+            file_to_write = File::create(file.header().path().unwrap())?;
+            data = Vec::new();
+            
             file.read_to_end(&mut data).unwrap();
             file_to_write.write_all(&data)?;
         }

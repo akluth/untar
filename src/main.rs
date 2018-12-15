@@ -1,11 +1,14 @@
 extern crate tar;
 extern crate clap;
+extern crate dialoguer;
 
 use clap::{Arg, App};
+use dialoguer::Confirmation;
 use std::io::prelude::*;
 use std::io::{self, Read};
 use std::fs;
 use std::fs::File;
+use std::path::Path;
 use tar::Archive;
 use libflate::gzip::Decoder;
 
@@ -28,20 +31,44 @@ fn main() -> io::Result<()> {
     for file in a.entries().unwrap() {
         let mut file = file.unwrap();
 
-        println!("{:?}", file.header().path().unwrap());
+        println!("{:?} ", file.header().path().unwrap());
 
         let path = file.path()?;
 
         if path.to_str().unwrap().chars().last().unwrap() == '/' {
-            fs::create_dir(path.to_str().unwrap());
+            if Path::new(path.to_str().unwrap()).exists() {
+                if Confirmation::new()
+                    .with_text("File exists. Overwrite?")
+                    .interact()
+                    .unwrap()
+                {
+                    fs::create_dir(path.to_str().unwrap());
+                }
+            } else {
+                fs::create_dir(path.to_str().unwrap())?;
+            }
+
             continue;
         }
 
         let mut file_to_write = File::create(file.header().path().unwrap())?;
         let mut data = Vec::new();
 
-        file.read_to_end(&mut data).unwrap();
-        file_to_write.write_all(&data)?;
+        if Path::new(path.to_str().unwrap()).exists() {
+            if Confirmation::new()
+                .with_text("File exists. Overwrite?")
+                .interact()
+                .unwrap()
+            {
+                file.read_to_end(&mut data).unwrap();
+                file_to_write.write_all(&data)?;
+            } else {
+                continue;
+            }
+        } else {
+            file.read_to_end(&mut data).unwrap();
+            file_to_write.write_all(&data)?;
+        }
     }
 
     Ok(())

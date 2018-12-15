@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Alexander Kluth <deralex@cpan.org>"]
 edition = "2018"
 
+[features]
+nocolor = ["colored/no-color"]
+
 [dependencies]
 tar = "0.4.20"
 libflate = "0.1.19"

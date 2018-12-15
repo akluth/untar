@@ -1,6 +1,15 @@
 # untar
 Unpack tar archives with various compression algorithms (gz, bzip2 etc.)
 
+## Build
+Install `cargo` and builing `untar` is quite simple:
+
+    cargo build --release
+
+If you want `untar` without printing colors in your terminal build with the following feature option:
+
+    cargo build --release --features nocolor
+
 ## Usage
 Quite simple:
 

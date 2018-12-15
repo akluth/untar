@@ -1,0 +1,10 @@
+[package]
+name = "untar"
+version = "0.1.0"
+authors = ["Alexander Kluth <deralex@cpan.org>"]
+edition = "2018"
+
+[dependencies]
+tar = "0.4.20"
+libflate = "0.1.19"
+clap = "2.32.0"
